@@ -1,0 +1,22 @@
+[package]
+name = "scratchstack-wrapper-aws-crt"
+description = "Scratchstack Rust wrapper around the AWS C runtime library"
+authors = ["David Cuthbert <dacut@kanga.org>"]
+edition = "2021"
+homepage = "https://github.com/dacut/scratchstack-wrapper-aws-crt"
+license = "Apache-2.0"
+repository = "https://github.com/dacut/scratchstack-wrapper-aws-crt"
+version = "0.1.0-alpha.0"
+
+[build-dependencies]
+cc = "^1.0"
+cmake = "^0.1"
+
+[dependencies]
+libc = "^0.2"
+
+[dev-dependencies]
+env_logger = "^0.9"
+log = "^0.4"
+pretty_assertions = "^1.3"
+test-log = "^0.2"
