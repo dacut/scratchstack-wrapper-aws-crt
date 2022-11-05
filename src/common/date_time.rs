@@ -1,8 +1,8 @@
 use {
-    crate::common::{AwsAllocator, AwsByteBuf, AwsByteCursor, AwsCByteBuf},
+    crate::common::{AwsAllocator, AwsByteBuf, AwsCByteBuf, AwsCByteCursor},
     std::{
-        fmt::{Debug, Display, Formatter, Result as FmtResult},
         ffi::CString,
+        fmt::{Debug, Display, Formatter, Result as FmtResult},
         mem::zeroed,
     },
 };
@@ -166,20 +166,21 @@ extern "C" {
 
     pub fn aws_date_time_init_epoch_secs(dt: *mut AwsCDateTime, sec_ms: f64);
 
-    #[must_use]
+    #[must_use = "returns an i32 that contains a result code (AWS_OP_SUCCESS or AWS_OP_ERR)"]
     pub(crate) fn aws_date_time_init_from_str(
         dt: *mut AwsCDateTime,
         date_str: *const AwsCByteBuf,
         fmt: AwsDateFormat,
     ) -> i32;
 
+    #[must_use = "returns an i32 that contains a result code (AWS_OP_SUCCESS or AWS_OP_ERR)"]
     pub fn aws_date_time_init_from_str_cursor(
         dt: *mut AwsCDateTime,
-        date_str_cursor: *const AwsByteCursor,
+        date_str_cursor: *const AwsCByteCursor,
         fmt: AwsDateFormat,
     ) -> i32;
 
-    #[must_use]
+    #[must_use = "returns an i32 that contains a result code (AWS_OP_SUCCESS or AWS_OP_ERR)"]
     #[allow(dead_code)]
     pub(crate) fn aws_date_time_to_local_time_str(
         dt: *const AwsCDateTime,
@@ -187,7 +188,7 @@ extern "C" {
         output_buf: *mut AwsCByteBuf,
     ) -> i32;
 
-    #[must_use]
+    #[must_use = "returns an i32 that contains a result code (AWS_OP_SUCCESS or AWS_OP_ERR)"]
     #[allow(dead_code)]
     pub(crate) fn aws_date_time_to_utc_time_str(
         dt: *const AwsCDateTime,

@@ -22,6 +22,7 @@ fn main() {
     env_logger::init();
 
     println!("cargo:rustc-link-search=native={out_dir}/lib");
+    println!("cargo:rerun-if-changed=build.rs");
 
     for library in LIBRARIES {
         // Prepare the build.

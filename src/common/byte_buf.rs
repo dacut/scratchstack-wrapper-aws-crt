@@ -22,10 +22,10 @@ impl AwsByteBuf {
             len: 0,
             buffer: null_mut(),
             capacity,
-            allocator: allocator.inner,
+            allocator: allocator.as_ptr(),
         };
 
-        let init_ok = unsafe { aws_byte_buf_init(&mut buf, allocator.inner, capacity) };
+        let init_ok = unsafe { aws_byte_buf_init(&mut buf, allocator.as_ptr(), capacity) };
         if init_ok != 0 {
             return Err("Failed to initialize byte buffer".into());
         }
@@ -44,10 +44,10 @@ impl AwsByteBuf {
             len: 0,
             buffer: null_mut(),
             capacity: 0,
-            allocator: allocator.inner,
+            allocator: allocator.as_ptr(),
         };
 
-        let init_ok = unsafe { aws_byte_buf_init(&mut buf, allocator.inner, s_bytes.len()) };
+        let init_ok = unsafe { aws_byte_buf_init(&mut buf, allocator.as_ptr(), s_bytes.len()) };
         if init_ok != 0 {
             return Err("Failed to initialize byte buffer".into());
         }
@@ -107,7 +107,7 @@ impl Drop for AwsByteBuf {
 }
 
 #[repr(C)]
-pub(crate) struct AwsCByteBuf {
+pub struct AwsCByteBuf {
     pub len: usize,
     pub buffer: *mut u8,
     pub capacity: usize,
@@ -118,13 +118,13 @@ unsafe impl Send for AwsCByteBuf {}
 unsafe impl Sync for AwsCByteBuf {}
 
 #[repr(C)]
-pub struct AwsByteCursor {
+pub struct AwsCByteCursor {
     pub len: usize,
     pub ptr: *const u8,
 }
 
-unsafe impl Send for AwsByteCursor {}
-unsafe impl Sync for AwsByteCursor {}
+unsafe impl Send for AwsCByteCursor {}
+unsafe impl Sync for AwsCByteCursor {}
 
 #[link(name = "aws-c-common")]
 extern "C" {
@@ -133,18 +133,19 @@ extern "C" {
         -> bool;
     pub fn aws_array_eq_c_str(array: *const c_void, array_len: usize, c_str: *const u8) -> bool;
     pub fn aws_array_eq_c_str_ignore_case(array: *const c_void, array_len: usize, c_str: *const u8) -> bool;
-    #[must_use]
-    pub(crate) fn aws_byte_buf_init(buf: *mut AwsCByteBuf, allocator: *const AwsCAllocator, capacity: usize) -> i32;
-    #[must_use]
-    pub(crate) fn aws_byte_buf_init_copy(
+
+    #[must_use = "returns an i32 that contains a result code (AWS_OP_SUCCESS or AWS_OP_ERR)"]
+    pub fn aws_byte_buf_init(buf: *mut AwsCByteBuf, allocator: *const AwsCAllocator, capacity: usize) -> i32;
+
+    #[must_use = "returns an i32 that contains a result code (AWS_OP_SUCCESS or AWS_OP_ERR)"]
+    pub fn aws_byte_buf_init_copy(
         dest: *mut AwsCByteBuf,
         allocator: *const AwsCAllocator,
         src: *const AwsCByteBuf,
     ) -> i32;
 
-    #[must_use]
-    #[allow(dead_code)]
-    pub(crate) fn aws_byte_buf_init_from_file(
+    #[must_use = "returns an i32 that contains a result code (AWS_OP_SUCCESS or AWS_OP_ERR)"]
+    pub fn aws_byte_buf_init_from_file(
         out_buf: *mut AwsCByteBuf,
         allocator: *const AwsCAllocator,
         filename: *const u8,
@@ -152,48 +153,41 @@ extern "C" {
 
     pub(crate) fn aws_byte_buf_is_valid(buf: *const AwsCByteBuf) -> bool;
 
-    pub fn aws_byte_cursor_is_valid(cursor: *const AwsByteCursor) -> bool;
+    pub fn aws_byte_cursor_is_valid(cursor: *const AwsCByteCursor) -> bool;
 
-    #[must_use]
-    #[allow(dead_code)]
-    pub(crate) fn aws_byte_buf_init_copy_from_cursor(
+    #[must_use = "returns an i32 that contains a result code (AWS_OP_SUCCESS or AWS_OP_ERR)"]
+    pub fn aws_byte_buf_init_copy_from_cursor(
         buf: *mut AwsCByteBuf,
         allocator: *const AwsCAllocator,
-        src: AwsByteCursor,
+        src: AwsCByteCursor,
     ) -> i32;
-    #[must_use]
-    #[allow(dead_code)]
-    pub(crate) fn aws_byte_buf_init_cache_and_update_cursors(
+
+    #[must_use = "returns an i32 that contains a result code (AWS_OP_SUCCESS or AWS_OP_ERR)"]
+    pub fn aws_byte_buf_init_cache_and_update_cursors(
         buf: *mut AwsCByteBuf,
         allocator: *const AwsCAllocator,
         ...
     ) -> i32;
 
-    pub(crate) fn aws_byte_buf_clean_up(buf: *mut AwsCByteBuf);
+    pub fn aws_byte_buf_clean_up(buf: *mut AwsCByteBuf);
 
-    #[allow(dead_code)]
-    pub(crate) fn aws_byte_buf_clean_up_secure(buf: *mut AwsCByteBuf);
+    pub fn aws_byte_buf_clean_up_secure(buf: *mut AwsCByteBuf);
 
-    #[allow(dead_code)]
-    pub(crate) fn aws_byte_buf_reset(buf: *mut AwsCByteBuf, zero: bool);
+    pub fn aws_byte_buf_reset(buf: *mut AwsCByteBuf, zero: bool);
 
-    pub(crate) fn aws_byte_buf_secure_zero(buf: *mut AwsCByteBuf);
+    pub fn aws_byte_buf_secure_zero(buf: *mut AwsCByteBuf);
 
-    #[allow(dead_code)]
-    pub(crate) fn aws_byte_buf_eq(a: *const AwsCByteBuf, b: *const AwsCByteBuf) -> bool;
+    pub fn aws_byte_buf_eq(a: *const AwsCByteBuf, b: *const AwsCByteBuf) -> bool;
 
-    #[allow(dead_code)]
-    pub(crate) fn aws_byte_buf_eq_ignore_case(a: *const AwsCByteBuf, b: *const AwsCByteBuf) -> bool;
+    pub fn aws_byte_buf_eq_ignore_case(a: *const AwsCByteBuf, b: *const AwsCByteBuf) -> bool;
 
-    #[allow(dead_code)]
-    pub(crate) fn aws_byte_buf_eq_c_str(a: *const AwsCByteBuf, b: *const u8) -> bool;
+    pub fn aws_byte_buf_eq_c_str(a: *const AwsCByteBuf, b: *const u8) -> bool;
 
-    #[allow(dead_code)]
-    pub(crate) fn aws_byte_buf_eq_c_str_ignore_case(a: *const AwsCByteBuf, b: *const u8) -> bool;
+    pub fn aws_byte_buf_eq_c_str_ignore_case(a: *const AwsCByteBuf, b: *const u8) -> bool;
 
     pub fn aws_byte_cursor_next_split(
-        input_str: *const AwsByteCursor,
+        input_str: *const AwsCByteCursor,
         split_on: u8,
-        substr: *const AwsByteCursor,
+        substr: *const AwsCByteCursor,
     ) -> bool;
 }
