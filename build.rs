@@ -1,6 +1,6 @@
 use {
     log::{error, info},
-    std::{env::var, process::Command},
+    std::{env::var, fs::create_dir_all, process::Command},
 };
 
 const CMAKE_BUILD_TYPE: &str = "Debug";
@@ -25,12 +25,16 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 
     for library in LIBRARIES {
+        // Create the CMake build directory.
+        let lib_cmake_dir = format!("{out_dir}/cmake/{library}/build");
+        create_dir_all(&lib_cmake_dir).unwrap();
+
         // Prepare the build.
         let args = vec![
             "-S".to_string(),
             library.to_string(),
             "-B".to_string(),
-            format!("{library}/build"),
+            lib_cmake_dir.clone(),
             format!("-DCMAKE_BUILD_TYPE={CMAKE_BUILD_TYPE}"),
             format!("-DCMAKE_INSTALL_PREFIX={out_dir}"),
             format!("-DCMAKE_PREFIX_PATH={out_dir}"),
@@ -52,7 +56,7 @@ fn main() {
 
         // Build the library.
         let args =
-            vec!["--build".to_string(), format!("{library}/build"), "--target".to_string(), "install".to_string()];
+            vec!["--build".to_string(), lib_cmake_dir, "--target".to_string(), "install".to_string()];
         info!("Building {library}: cmake {}", args.join(" "));
 
         match Command::new("cmake").args(args).status() {
